@@ -22,7 +22,10 @@ function! womp#connect()
 endfunction
 
 function! womp#do_something()
-  call rpcnotify(s:jobid, 'do_something')
+  if s:jobid > 0
+    return rpcrequest(s:jobid, 'do_something')
+  else
+    return "a"
 endfun
 
 function! womp#stop()

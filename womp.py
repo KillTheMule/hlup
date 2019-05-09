@@ -2,20 +2,29 @@
 import os
 import re
 import sys
+import time
 from functools import partial
 
-import neovim
+import pynvim as neovim
 
 def handle_request(nvim, name, args):
-    return
+    time.sleep(0.1)
+    return "XYZ"
 
 def handle_notification(nvim, name, args):
     if name == 'quit':
         error_cb(nvim, "Got quit")
         sys.exit(0)
 
-    if name == 'do_something':
-        nvim.command("echom 'doing something'")
+    if name == 'nvim_buf_lines_event':
+        nvim.my_counter += 1
+        nvim.command("echo \"Number of calls: "+str(nvim.my_counter)+"\"")
+
+        buf = nvim.my_buf
+        toggle = nvim.my_counter % 2
+        buf.clear_highlight(-1, 0, -1)
+        buf.add_highlight("Error", 0, col_start=0, col_end=toggle, src_id=-1, async_=None)
+
 
 def error_cb(nvim, message):
     with open('nvimlog', 'a') as f:
@@ -27,8 +36,10 @@ def main():
     error_cb(nvim, "Python script started")
 
     for buffer in nvim.buffers:
-        buffer.api.live_updates(True)
+        buffer.api.attach(False, [])
 
+    nvim.my_counter = 0
+    nvim.my_buf = nvim.current.buffer
     nvim.run_loop(partial(handle_request, nvim),
                   partial(handle_notification, nvim),
                   err_cb=partial(error_cb, nvim))
