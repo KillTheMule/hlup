@@ -22,8 +22,13 @@ def handle_notification(nvim, name, args):
 
         buf = nvim.my_buf
         toggle = nvim.my_counter % 2
-        buf.clear_highlight(-1, 0, -1)
-        buf.add_highlight("Error", 0, col_start=0, col_end=toggle, src_id=-1, async_=None)
+        #buf.clear_highlight(-1, 0, -1)
+        #buf.add_highlight("Error", 0, col_start=0, col_end=toggle, src_id=-1, async_=None)
+        nvim.api.call_atomic([
+            ["nvim_buf_clear_highlight", [0, -1, 0, -1]],
+            ["nvim_buf_add_highlight", [0, -1, "Error", 0, 0, toggle]],
+            ["nvim_buf_add_highlight", [0, -1, "Error", 0, 3, 3+toggle]],
+            ])
 
 
 def error_cb(nvim, message):
